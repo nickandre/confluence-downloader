@@ -3,6 +3,7 @@ import urllib3
 import boto3
 from datetime import datetime, timedelta
 
+# (you should probably use secrets manager)
 SERVER = 'https://{tenant}.atlassian.net'
 USER = '{your user}'
 PASS = '{your password}'
