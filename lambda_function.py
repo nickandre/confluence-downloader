@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 SERVER = 'https://{tenant}.atlassian.net'
 USER = '{your user}'
 PASS = '{your password}'
+BUCKET_NAME = '{your bucket with IAM permissions}'
 
 def get_request(http, url):
     headers = urllib3.make_headers(basic_auth='{0}:{1}'.format(USER, PASS))
@@ -70,7 +71,7 @@ def lambda_handler(event, context):
     
     s3_client = boto3.client("s3")
     paginator = s3_client.get_paginator('list_objects_v2')
-    s3_pages = paginator.paginate(Bucket='confluence-data')
+    s3_pages = paginator.paginate(Bucket=BUCKET_NAME)
     files = []
     for s3_page in s3_pages:
         if 'Contents' in s3_page.keys():
@@ -90,7 +91,7 @@ def lambda_handler(event, context):
     stopped_early = False
     for page_key, page_url in missing_files.items():
         page_contents = get_page_content(http=http, page_url=page_url)
-        s3_client.put_object(Bucket="confluence-data", Key=page_key, Body=json.dumps(page_contents))
+        s3_client.put_object(Bucket=BUCKET_NAME, Key=page_key, Body=json.dumps(page_contents))
         inserted_files.append(page_key)
         if datetime.now() > (timedelta(minutes=13) + start_time):
             stopped_early = True
